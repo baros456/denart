@@ -1,0 +1,20 @@
+{
+  "name": "denart-project",
+  "version": "1.0.0",
+  "description": "Denart - Sanat ve Tasarım Kursu web uygulaması",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "firebase": "^11.2.0",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "author": "Baros963",
+  "license": "ISC"
+}
