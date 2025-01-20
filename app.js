@@ -57,6 +57,7 @@ app.post('/admin-login', (req, res) => {
         req.session.isAdmin = true;
         res.redirect('/admin-panel');
     } else {
+        console.error(`Admin login failed for username: ${username}`);
         res.status(401).send('Geçersiz kullanıcı adı veya şifre');
     }
 });
@@ -135,7 +136,8 @@ app.post('/login', async (req, res) => {
         req.session.user = user;
         res.redirect('/secret');
     } else {
-        res.send('Geçersiz email veya şifre');
+        console.error(`Login failed for email: ${email}`);
+        res.status(401).send('Geçersiz email veya şifre');
     }
 });
 
