@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Paneli</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: 'Poppins', sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .user-list {
+            margin-bottom: 40px;
+        }
+        .user-item {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .user-item h2 {
+            margin-bottom: 10px;
+        }
+        .user-item p {
+            margin-bottom: 5px;
+        }
+        .user-item button {
+            background-color: #FF6F61;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+        }
+        .form-container input,
+        .form-container textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .form-container select,
+        .form-container button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Paneli</h1>
+        <div class="user-list" id="user-list">
+            <!-- Kullanıcı listesi burada gösterilecek -->
+        </div>
+        <div class="form-container">
+            <h2>Çocuk Bilgilerini Güncelle</h2>
+            <form id="child-info-form">
+                <select id="user-email" required>
+                    <option value="" disabled selected>Kullanıcı Seçin</option>
+                </select>
+                <input type="text" id="child-name" placeholder="Çocuğun Adı" required>
+                <textarea id="general-status" placeholder="Genel Durum" required></textarea>
+                <textarea id="lesson-date" placeholder="Dersin Olduğu Tarih" required></textarea>
+                <textarea id="payment-status" placeholder="Ödeme Durumu" required></textarea>
+                <textarea id="art-class-topic" placeholder="Resim Dersi Konusu" required></textarea>
+                <button type="submit">Kaydet</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        async function loadUsers() {
+            const response = await fetch('/users');
+            const users = await response.json();
+            const userList = document.getElementById('user-list');
+            const userEmailSelect = document.getElementById('user-email');
+            userList.innerHTML = '';
+            userEmailSelect.innerHTML = '<option value="" disabled selected>Kullanıcı Seçin</option>';
+
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.classList.add('user-item');
+                userItem.innerHTML = `
+                    <h2>${user.name}</h2>
+                    <p>Email: ${user.email}</p>
+                    <p>Telefon: ${user.phone}</p>
+                    <p>Çocuğun Adı: ${user.childName}</p>
+                    <button onclick="deleteUser('${user.email}')">Sil</button>
+                `;
+                userList.appendChild(userItem);
+
+                const option = document.createElement('option');
+                option.value = user.email;
+                option.textContent = user.email;
+                userEmailSelect.appendChild(option);
+            });
+        }
+
+        async function deleteUser(email) {
+            const response = await fetch(`/users/${email}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Kullanıcı silindi');
+                loadUsers();
+            } else {
+                alert('Kullanıcı silinirken bir hata oluştu');
+            }
+        }
+
+        async function loadChildInfo(email) {
+            const response = await fetch(`/child-info?email=${email}`);
+            const data = await response.json();
+
+            document.getElementById('child-name').value = data.childName || '';
+            document.getElementById('general-status').value = data.generalStatus || '';
+            document.getElementById('lesson-date').value = data.lessonDate || '';
+            document.getElementById('payment-status').value = data.paymentStatus || '';
+            document.getElementById('art-class-topic').value = data.artClassTopic || '';
+        }
+
+        document.getElementById('user-email').addEventListener('change', (e) => {
+            const email = e.target.value;
+            loadChildInfo(email);
+        });
+
+        document.getElementById('child-info-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('user-email').value;
+            const childName = document.getElementById('child-name').value;
+            const generalStatus = document.getElementById('general-status').value;
+            const lessonDate = document.getElementById('lesson-date').value;
+            const paymentStatus = document.getElementById('payment-status').value;
+            const artClassTopic = document.getElementById('art-class-topic').value;
+
+            try {
+                const response = await fetch('/update-child-info', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, childName, generalStatus, lessonDate, paymentStatus, artClassTopic })
+                });
+
+                if (response.ok) {
+                    alert('Bilgiler güncellendi');
+                } else {
+                    alert('Bir hata oluştu');
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                alert('Bir hata oluştu');
+            }
+        });
+
+        // Sayfa yüklendiğinde kullanıcıları yükle
+        window.onload = loadUsers;
+    </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denart - Giriş Yap</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Genel Stil */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f1a, #1e1e2f);
+            color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(90deg, #FF6F61, #FF8E53);
+            color: #fff;
+            text-align: center;
+            padding: 30px 0;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: glow 2s infinite alternate;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        nav {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        nav a {
+            color: #f4f4f4;
+            text-decoration: none;
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        nav a i {
+            margin-right: 8px;
+        }
+
+        nav a:hover {
+            background: #FF6F61;
+            border-radius: 5px;
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-container form input {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .login-container form button {
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #FF6F61, #FF8E53);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-container form button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 111, 97, 0.5);
+        }
+
+        .login-container a {
+            margin-top: 20px;
+            display: block;
+            color: #f4f4f4;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .login-container a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background: #1e1e2f;
+            color: #aaa;
+            font-size: 0.9rem;
+            width: 100%;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 5px #fff, 0 0 10px #FF6F61, 0 0 20px #FF8E53;
+            }
+            to {
+                text-shadow: 0 0 10px #fff, 0 0 20px #FF6F61, 0 0 30px #FF8E53;
+            }
+        }
+
+        /* Responsive Tasarım */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            nav a {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            .login-container {
+                padding: 30px;
+            }
+            .login-container form input {
+                padding: 12px;
+            }
+            .login-container form button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Denart</h1>
+        <p>Sanat ve Tasarım Kursları</p>
+    </header>
+    <nav>
+        <a href="index.html"><i class="fas fa-home"></i> Ana Sayfa</a>
+        <a href="register.html"><i class="fas fa-user-plus"></i> Kayıt Ol</a>
+        <a href="login.html"><i class="fas fa-sign-in-alt"></i> Giriş Yap</a>
+        <a href="contact.html"><i class="fas fa-envelope"></i> İletişim</a>
+    </nav>
+    <div class="login-container">
+        <h2>Giriş Yap</h2>
+        <form id="loginForm" action="/login" method="post">
+            <input type="email" id="email" name="email" placeholder="Email" required>
+            <input type="password" id="password" name="password" placeholder="Şifre" required>
+            <button type="submit">Giriş Yap</button>
+        </form>
+        <a href="register.html"><i class="fas fa-arrow-left"></i> Kayıt Ol</a>
+    </div>
+    <footer>
+        &copy; 2025 Denart. Tüm hakları saklıdır.
+    </footer>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Lütfen tüm alanları doldurun.');
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
