@@ -52,18 +52,24 @@
             margin-bottom: 20px;
         }
         .form-container input,
-        .form-container textarea {
+        .form-container textarea,
+        .form-container select {
             display: block;
             width: 100%;
             margin-bottom: 10px;
             padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        .form-container select,
         .form-container button {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
+            background-color: #28a745;
+            border: none;
+            color: #fff;
             padding: 10px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #218838;
         }
     </style>
 </head>
@@ -75,22 +81,20 @@
         </div>
         <div class="form-container">
             <h2>Çocuk Bilgilerini Güncelle</h2>
-            <form id="child-info-form">
-                <select id="user-email" required>
-                    <option value="" disabled selected>Kullanıcı Seçin</option>
-                </select>
-                <input type="text" id="child-name" placeholder="Çocuğun Adı" required>
-                <textarea id="general-status" placeholder="Genel Durum" required></textarea>
-                <textarea id="lesson-date" placeholder="Dersin Olduğu Tarih" required></textarea>
-                <textarea id="payment-status" placeholder="Ödeme Durumu" required></textarea>
-                <textarea id="art-class-topic" placeholder="Resim Dersi Konusu" required></textarea>
-                <button type="submit">Kaydet</button>
-            </form>
+       <form id="child-info-form">
+    <input type="text" id="user-email" placeholder="Email" required />
+    <input type="text" id="child-name" placeholder="Çocuk Adı" required />
+    <input type="text" id="general-status" placeholder="Genel Durum" required />
+    <input type="date" id="lesson-date" placeholder="Ders Tarihi" required />
+    <input type="text" id="payment-status" placeholder="Ödeme Durumu" required />
+    <input type="text" id="art-class-topic" placeholder="Sanat Dersi Konusu" required />
+    <button type="submit">Güncelle</button>
+</form>
         </div>
     </div>
     <script>
         async function loadUsers() {
-            const response = await fetch('/users');
+            const response = await fetch('/get-users');
             const users = await response.json();
             const userList = document.getElementById('user-list');
             const userEmailSelect = document.getElementById('user-email');
@@ -117,7 +121,7 @@
         }
 
         async function deleteUser(email) {
-            const response = await fetch(`/users/${email}`, {
+            const response = await fetch(`/delete-user?email=${email}`, {
                 method: 'DELETE'
             });
 
@@ -130,7 +134,7 @@
         }
 
         async function loadChildInfo(email) {
-            const response = await fetch(`/child-info?email=${email}`);
+            const response = await fetch(`/get-user?email=${email}`);
             const data = await response.json();
 
             document.getElementById('child-name').value = data.childName || '';
@@ -146,34 +150,35 @@
         });
 
         document.getElementById('child-info-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('user-email').value;
-            const childName = document.getElementById('child-name').value;
-            const generalStatus = document.getElementById('general-status').value;
-            const lessonDate = document.getElementById('lesson-date').value;
-            const paymentStatus = document.getElementById('payment-status').value;
-            const artClassTopic = document.getElementById('art-class-topic').value;
+    e.preventDefault();
+    const email = document.getElementById('user-email').value;
+    const childName = document.getElementById('child-name').value;
+    const generalStatus = document.getElementById('general-status').value;
+    const lessonDate = document.getElementById('lesson-date').value;
+    const paymentStatus = document.getElementById('payment-status').value;
+    const artClassTopic = document.getElementById('art-class-topic').value;
 
-            try {
-                const response = await fetch('/update-child-info', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, childName, generalStatus, lessonDate, paymentStatus, artClassTopic })
-                });
-
-                if (response.ok) {
-                    alert('Bilgiler güncellendi');
-                } else {
-                    alert('Bir hata oluştu');
-                }
-            } catch (error) {
-                console.error('Hata:', error);
-                alert('Bir hata oluştu');
-            }
+    try {
+        const response = await fetch('/update-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, childName, generalStatus, lessonDate, paymentStatus, artClassTopic })
         });
 
+        if (response.ok) {
+            alert('Bilgiler güncellendi');
+            loadUsers(); // Kullanıcı listesini güncelle
+        } else {
+            const errorText = await response.text();
+            alert('Hata: ' + errorText);
+        }
+    } catch (error) {
+        console.error('Hata:', error);
+        alert('Bir hata oluştu');
+    }
+});
         // Sayfa yüklendiğinde kullanıcıları yükle
         window.onload = loadUsers;
     </script>
