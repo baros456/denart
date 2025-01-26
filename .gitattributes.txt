@@ -1,0 +1,8 @@
+# Normalize all text files to use LF
+* text=auto
+
+# Ensure that specific files, such as batch scripts, use CRLF
+*.bat text eol=crlf
+
+# Ensure that specific files, such as shell scripts, use LF
+*.sh text eol=lf

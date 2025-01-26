@@ -2,12 +2,13 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const fs = require('fs');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
+// Middleware ayarları
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -19,29 +20,28 @@ app.use(session({
     cookie: { secure: false, maxAge: 600000 }
 }));
 
-const loadUsers = () => {
-    if (!fs.existsSync('users.json')) {
-        fs.writeFileSync('users.json', '[]');
-    }
-    const data = fs.readFileSync('users.json');
-    return JSON.parse(data);
-};
+// MongoDB bağlantı dizesi
+const uri = "mongodb+srv://barismengi:Baros963.@baros.hkr5o.mongodb.net/?retryWrites=true&w=majority&appName=baros";
 
-const saveUsers = (users) => {
-    fs.writeFileSync('users.json', JSON.stringify(users, null, 2));
-};
+// MongoDB'ye bağlantı kuruyoruz
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log("MongoDB'ye başarıyla bağlanıldı!"))
+    .catch((err) => console.log("MongoDB bağlantısı hatası:", err));
 
-const loadChildren = () => {
-    if (!fs.existsSync('children.json')) {
-        fs.writeFileSync('children.json', '[]');
-    }
-    const data = fs.readFileSync('children.json');
-    return JSON.parse(data);
-};
+// Kullanıcı şeması
+const userSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    password: String,
+    phone: String,
+    childName: String,
+    generalStatus: String,
+    lessonDate: String,
+    paymentStatus: String,
+    artClassTopic: String
+});
 
-const saveChildren = (children) => {
-    fs.writeFileSync('children.json', JSON.stringify(children, null, 2));
-};
+const User = mongoose.model('User', userSchema);
 
 // Admin login
 app.get('/admin-login', (req, res) => {
@@ -57,7 +57,6 @@ app.post('/admin-login', (req, res) => {
         req.session.isAdmin = true;
         res.redirect('/admin-panel');
     } else {
-        console.error(`Admin login failed for username: ${username}`);
         res.status(401).send('Geçersiz kullanıcı adı veya şifre');
     }
 });
@@ -71,36 +70,6 @@ app.get('/admin-panel', (req, res) => {
     }
 });
 
-// Kullanıcı listesi
-app.get('/users', (req, res) => {
-    const users = loadUsers();
-    res.json(users);
-});
-
-// Çocuk bilgilerini yükle
-app.get('/child-info', (req, res) => {
-    const { email } = req.query;
-    const children = loadChildren();
-    const childInfo = children.find(child => child.email === email) || {};
-    res.json(childInfo);
-});
-
-// Çocuk bilgilerini güncelle
-app.post('/update-child-info', (req, res) => {
-    const { email, childName, generalStatus, lessonDate, paymentStatus, artClassTopic } = req.body;
-    const children = loadChildren();
-    const index = children.findIndex(child => child.email === email);
-
-    if (index !== -1) {
-        children[index] = { email, childName, generalStatus, lessonDate, paymentStatus, artClassTopic };
-    } else {
-        children.push({ email, childName, generalStatus, lessonDate, paymentStatus, artClassTopic });
-    }
-
-    saveChildren(children);
-    res.sendStatus(200);
-});
-
 // Kullanıcı kayıt
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
@@ -108,18 +77,28 @@ app.get('/register', (req, res) => {
 
 app.post('/register', async (req, res) => {
     const { name, email, phone, childName, password } = req.body;
-    const users = loadUsers();
 
-    const existingUser = users.find(user => user.email === email);
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
         return res.send('Bu email adresi zaten kayıtlı.');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    users.push({ name, email, phone, childName, password: hashedPassword });
-    saveUsers(users);
+    const newUser = new User({ name, email, phone, childName, password: hashedPassword });
+    await newUser.save();
 
     res.redirect('/login');
+});
+
+// Kullanıcı bilgilerini alma
+app.get('/get-user', async (req, res) => {
+    const { email } = req.query;
+    try {
+        const user = await User.findOne({ email });
+        res.json(user);
+    } catch (err) {
+        res.status(500).send("Kullanıcı bilgilerini getirme hatası!");
+    }
 });
 
 // Kullanıcı giriş
@@ -129,15 +108,13 @@ app.get('/login', (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    const users = loadUsers();
+    const user = await User.findOne({ email });
 
-    const user = users.find(user => user.email === email);
     if (user && await bcrypt.compare(password, user.password)) {
         req.session.user = user;
         res.redirect('/secret');
     } else {
-        console.error(`Login failed for email: ${email}`);
-        res.status(401).send('Geçersiz email veya şifre');
+        res.send('Geçersiz email veya şifre');
     }
 });
 
@@ -150,24 +127,80 @@ app.get('/secret', (req, res) => {
     }
 });
 
+
 app.get('/check-login', (req, res) => {
     if (req.session.user) {
-        res.json({ isLoggedIn: true });
+        res.json({ isLoggedIn: true, user: req.session.user });
     } else {
         res.json({ isLoggedIn: false });
     }
 });
 
-app.get('/user-info', (req, res) => {
-    if (req.session.user) {
-        const children = loadChildren();
-        const childInfo = children.find(child => child.email === req.session.user.email) || {};
-        res.json(childInfo);
-    } else {
-        res.status(401).send('Unauthorized');
+app.get('/get-user', async (req, res) => {
+    const { email } = req.query;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).send("Kullanıcı bulunamadı.");
+        }
+        res.json(user);
+    } catch (err) {
+        res.status(500).send("Kullanıcı bilgilerini getirme hatası!");
     }
 });
 
+// Kullanıcıları görüntüleme
+app.get('/get-users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).send("Veritabanından kullanıcıları getirme hatası!");
+    }
+});
+
+
+
+// Kullanıcı güncelleme
+app.post('/update-user', async (req, res) => {
+    const { email, name, phone, childName, generalStatus, lessonDate, paymentStatus, artClassTopic } = req.body;
+
+    try {
+        const result = await User.updateOne(
+            { email },
+            { name, phone, childName, generalStatus, lessonDate, paymentStatus, artClassTopic }
+        );
+
+        if (result.nModified === 0) {
+            return res.status(404).send("Kullanıcı bulunamadı veya güncellenmedi.");
+        }
+
+        res.send("Kullanıcı başarıyla güncellendi!");
+    } catch (err) {
+        console.error("Güncelleme hatası:", err);
+        res.status(500).send("Bir hata oluştu!");
+    }
+});
+
+// Kullanıcı silme
+app.delete('/delete-user', async (req, res) => {
+    const { email } = req.query;
+
+    try {
+        const result = await User.deleteOne({ email });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).send("Kullanıcı bulunamadı.");
+        }
+
+        res.send("Kullanıcı başarıyla silindi!");
+    } catch (err) {
+        console.error("Silme hatası:", err);
+        res.status(500).send("Bir hata oluştu!");
+    }
+});
+
+// Kullanıcı çıkışı
 app.get('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
@@ -178,6 +211,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
+// Sunucuyu başlat
 app.listen(port, () => {
     console.log(`Sunucu http://localhost:${port} adresinde çalışıyor`);
 });

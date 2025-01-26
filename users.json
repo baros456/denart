@@ -12,5 +12,19 @@
     "phone": "5446444654",
     "childName": "yusfu",
     "password": "$2b$10$5KxriyNkoxBUaal8HZJywecuaTet8YzDhy10XR5lSnivJRunii8KK"
+  },
+  {
+    "name": "selam",
+    "email": "qwer@gmail.com",
+    "phone": "4557454875",
+    "childName": "aslı",
+    "password": "$2b$10$rSncDayWnpHE2kyorC/fcuTKMr0zCu6LXJdTQhQ8JTKl22mnh.qle"
+  },
+  {
+    "name": "sad",
+    "email": "asli@gmail.com",
+    "phone": "12346454",
+    "childName": "123456",
+    "password": "$2b$10$JS0.olHaOAENaD16ezckhuBeh8NSjXdKzJpKx1jKWZvNJaTxzxdKC"
   }
 ]
