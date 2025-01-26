@@ -3,7 +3,8 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // mongoose modülünü ekleyin
+const config = require('./config'); // config.js dosyasını oluşturduğunuzu varsayıyorum
 
 const app = express();
 const port = 3001;
@@ -20,11 +21,8 @@ app.use(session({
     cookie: { secure: false, maxAge: 600000 }
 }));
 
-// MongoDB bağlantı dizesi
-const uri = "mongodb+srv://barismengi:Baros963.@baros.hkr5o.mongodb.net/?retryWrites=true&w=majority&appName=baros";
-
 // MongoDB'ye bağlantı kuruyoruz
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(config.url)
     .then(() => console.log("MongoDB'ye başarıyla bağlanıldı!"))
     .catch((err) => console.log("MongoDB bağlantısı hatası:", err));
 
@@ -127,7 +125,6 @@ app.get('/secret', (req, res) => {
     }
 });
 
-
 app.get('/check-login', (req, res) => {
     if (req.session.user) {
         res.json({ isLoggedIn: true, user: req.session.user });
@@ -158,8 +155,6 @@ app.get('/get-users', async (req, res) => {
         res.status(500).send("Veritabanından kullanıcıları getirme hatası!");
     }
 });
-
-
 
 // Kullanıcı güncelleme
 app.post('/update-user', async (req, res) => {
