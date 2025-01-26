@@ -1,0 +1,25 @@
+const fs = require('fs');
+const mongoose = require('mongoose');
+const User = require('./user'); // user.js dosyasını import edin
+
+const uri = "mongodb+srv://barismengi:Baros963.@baros.hkr5o.mongodb.net/?retryWrites=true&w=majority&appName=baros";
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log("MongoDB'ye başarıyla bağlanıldı!"))
+    .catch((err) => console.log("MongoDB bağlantısı hatası:", err));
+
+fs.readFile('user.json', 'utf8', async (err, data) => {
+    if (err) {
+        console.error("Dosya okuma hatası:", err);
+        return;
+    }
+
+    const users = JSON.parse(data);
+    try {
+        await User.insertMany(users);
+        console.log("Kullanıcı verileri başarıyla eklendi!");
+    } catch (err) {
+        console.error("Kullanıcı ekleme hatası:", err);
+    } finally {
+        mongoose.connection.close(); // Bağlantıyı kapat
+    }
+});
